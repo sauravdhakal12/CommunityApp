@@ -4,6 +4,6 @@ import { userRegisterHandler } from "./user.controllers";
 // Router for user routes
 const userRouter = express.Router();
 
-userRouter.post("/register", userRegisterHandler);
+userRouter.post("/auth/register", userRegisterHandler);
 
 export default userRouter;
