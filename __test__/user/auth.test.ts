@@ -15,7 +15,7 @@ describe("User Auth", () => {
 
   // REGISTER
   it("Should register a new user", async () => {
-    const res = await request(app).post("/user/register").send({
+    const res = await request(app).post("/user/auth/register").send({
       name: name,
       email: email,
       password: password,
@@ -26,7 +26,7 @@ describe("User Auth", () => {
   });
 
   it("ERROR: Password constrain", async () => {
-    const res = await request(app).post("/user/register").send({
+    const res = await request(app).post("/user/auth/register").send({
       name: name,
       email: email,
       password: password,
