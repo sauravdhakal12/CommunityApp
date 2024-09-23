@@ -1,10 +1,8 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import db from "@/utils/db";
-import { DatabaseError } from "pg";
 import { FormUserType } from "@/api/user/user.types";
-import Logger from "@/utils/logger";
 
-export const userRegisterHandler = async (req: Request, res: Response) => {
+export const userRegisterHandler = async (req: Request, res: Response, next: NextFunction) => {
 
   // Get register data
   const body: FormUserType = req.body;
@@ -37,7 +35,6 @@ export const userRegisterHandler = async (req: Request, res: Response) => {
   }
   catch (err) {
     // TODO: next
-    if (err instanceof DatabaseError)
-      Logger.error(`${err.code}:: ${err.name} ==> ${err.message}`);
-  }
+    next(err);
+  };
 };
