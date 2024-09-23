@@ -6,7 +6,9 @@
 import { PORT } from "@/utils/config";
 import app from "@/index";
 
+import Logger from "@/utils/logger";
+
 // Start server
 app.listen(PORT, () => {
-  console.log("Listening on port " + PORT);
+  Logger.debug(`Listening on port ${PORT}`);
 });

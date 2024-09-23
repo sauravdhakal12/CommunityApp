@@ -9,3 +9,6 @@ dist/
 
 # Environment file
 .env
+
+# Log files
+logs
