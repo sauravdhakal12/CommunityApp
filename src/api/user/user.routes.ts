@@ -1,9 +1,9 @@
 import express from "express";
-import { demoRoute } from "./user.controllers";
+import { userRegisterHandler } from "./user.controllers";
 
 // Router for user routes
 const userRouter = express.Router();
 
-userRouter.get("/", demoRoute);
+userRouter.post("/register", userRegisterHandler);
 
 export default userRouter;
