@@ -15,6 +15,7 @@ export default tseslint.config(
       "@/linebreak-style": ["error", "unix"],
       "@/quotes": ["error", "double"],
       "@/semi": ["error", "always"],
+      "@typescript-eslint/no-unused-vars": "off",
       eqeqeq: "error",
       "no-trailing-spaces": "error",
       "object-curly-spacing": ["error", "always"],
