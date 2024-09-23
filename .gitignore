@@ -1,0 +1,11 @@
+# Node info
+node_modules/
+
+# Vscode
+.vscode/
+
+# Build files
+dist/
+
+# Environment file
+.env
