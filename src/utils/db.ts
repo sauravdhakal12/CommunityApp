@@ -2,7 +2,7 @@ import { Pool } from "pg";
 import { DB_HOST, DB_NAME, DB_PASSWORD, DB_PORT, DB_USER } from "./config";
 
 // Credentials for db
-const pool = new Pool({
+export const pool = new Pool({
   user: DB_USER,
   host: DB_HOST,
   port: DB_PORT,
@@ -16,18 +16,19 @@ const pool = new Pool({
 /*
   A function to run DB queries
 */
-export default async function db(queryText: string) {
+export default async function db(queryText: string, values?: Array<string | number>) {
 
   // Acquire connection from pool
   const client = await pool.connect();
 
   // Run query
   try {
-    const res = await client.query(queryText);
+    const res = await client.query(queryText, values);
+
     return res;
   }
   catch (err) {
-    console.log("Error: \n", err);
+    throw err;
   }
   finally {
     // Release connection

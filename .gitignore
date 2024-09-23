@@ -11,4 +11,7 @@ dist/
 .env
 
 # Log files
-logs
+logs/
+
+# DB
+seed/
