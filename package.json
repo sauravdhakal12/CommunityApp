@@ -6,7 +6,7 @@
   "scripts": {
     "build": "tsc --build && tsc-alias",
     "dev": "ts-node-dev -r tsconfig-paths/register ./server.ts",
-    "test": "jest",
+    "test": "jest --detectOpenHandles",
     "lint": "eslint ./src"
   },
   "keywords": [],
