@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import db from "@/utils/db";
 import { RegisterFormUserType, LoginFormUserType, DbUserType } from "@/api/user/user.types";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 /*
 #######################
@@ -88,6 +89,25 @@ export const userLoginHandler = async (req: Request, res: Response, next: NextFu
         message: "Incorrect password",
       });
     }
+    else if (!(userData.verified)) {
+      return res.status(200).json({
+        success: false,
+        message: "User not verified"
+      });
+    }
+
+    const jwtToken = jwt.sign({
+      id: userData.id,
+      email: userData.email,
+      name: userData.name,
+    }, "1234");
+
+    const cookieOption = {
+      maxAge: (1000 * 60 * 60 * 24 * 7),
+      path: "/"
+    };
+
+    res.cookie("auth_token", jwtToken, cookieOption);
 
     // Success
     return res.status(200).json({
