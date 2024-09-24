@@ -9,9 +9,12 @@ import { pool } from "../../src/utils/db";
 ##############################
 */
 describe("User Auth", () => {
+
+  // Default user Credentials
   const name = "demo-user";
   const email = "demouser@gmail.com";
   const password = "1234567";
+
 
   // REGISTER
   it("Should register a new user", async () => {
@@ -40,7 +43,18 @@ describe("User Auth", () => {
 
 
   // LOGIN
-  it("Should log a user in", async () => {
+  it("Should not let unverified user login", async () => {
+    const res = await request(app).post("/user/auth/login").send({
+      email: email,
+      password: password,
+    }).set("Content-Type", "application/json")
+      .set("Accept", "application/json");
+
+    expect(res.body.success).toBe(false);
+  });
+
+  it("Should log the user in", async () => {
+    await db("UPDATE users set verified = 'true' where email='demouser@gmail.com'; ");
     const res = await request(app).post("/user/auth/login").send({
       email: email,
       password: password,
@@ -48,6 +62,7 @@ describe("User Auth", () => {
       .set("Accept", "application/json");
 
     expect(res.body.success).toBe(true);
+    expect(res.headers["set-cookie"].length).toBe(1);
   });
 
   it("ERROR: User not found", async () => {
