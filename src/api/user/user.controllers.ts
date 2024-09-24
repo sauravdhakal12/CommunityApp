@@ -113,6 +113,7 @@ export const userLoginHandler = async (req: Request, res: Response, next: NextFu
     return res.status(200).json({
       success: true,
       message: "User found",
+      token: jwtToken,
     });
   }
   catch (err) {
