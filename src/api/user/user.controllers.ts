@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import db from "@/utils/db";
 import { RegisterFormUserType, LoginFormUserType, DbUserType } from "@/api/user/user.types";
+import bcrypt from "bcryptjs";
 
 /*
 #######################
@@ -27,12 +28,14 @@ export const userRegisterHandler = async (req: Request, res: Response, next: Nex
     });
   }
 
+  const hashedPass = await bcrypt.hash(body.password, 10);
+
   // Insert data into DB
   try {
     await db(`
       INSERT INTO users (name, email, password) 
       VALUES ($1, $2, $3);
-    `, [body.name, body.email, body.password]);
+    `, [body.name, body.email, hashedPass]);
 
     return res.status(200).json({
       success: true,
@@ -79,7 +82,7 @@ export const userLoginHandler = async (req: Request, res: Response, next: NextFu
     const userData: DbUserType = userDataDb.rows[0];
 
     // Match password
-    if (userData.password !== body.password) {
+    if (!(await bcrypt.compare(body.password, userData.password))) {
       return res.status(200).json({
         success: false,
         message: "Incorrect password",
