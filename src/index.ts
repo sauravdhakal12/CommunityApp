@@ -6,9 +6,18 @@ import userRouter from "@/api/user/user.routes";
 import morganMiddleware from "@/utils/morgan";
 import { errorHandler, unknownEndPoint } from "@/middleware/errorHandler";
 
+import cors from "cors";
+
 // Create Application
 const app: Application = express();
 
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true,
+  optionsSuccessStatus: 200,
+  maxAge: 86400,
+  methods: ["GET, POST, PUT, DELETE"]
+}));
 
 app.use(express.json());
 
