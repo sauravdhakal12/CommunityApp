@@ -2,6 +2,7 @@ import express, { Application } from "express";
 
 // Import Routes
 import userRouter from "@/api/user/user.routes";
+import { communityRouter } from "@/api/community/community.routes";
 
 import morganMiddleware from "@/utils/morgan";
 import { errorHandler, unknownEndPoint } from "@/middleware/errorHandler";
@@ -26,6 +27,7 @@ app.use(morganMiddleware);
 
 // Register Routes
 app.use("/user", userRouter);
+app.use("/community", communityRouter);
 app.use(unknownEndPoint);
 
 // Error handling middleware
