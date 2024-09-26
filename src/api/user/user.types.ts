@@ -13,6 +13,12 @@ export interface LoginFormUserType {
   password: string,
 };
 
+export type UserCookieType = {
+  id: string,
+  name: string,
+  email: string,
+}
+
 /* ##############
   DATABSE
 ################ */
