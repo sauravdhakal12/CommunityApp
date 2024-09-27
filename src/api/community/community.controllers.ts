@@ -120,6 +120,8 @@ export async function joinCommunityHandler(req: Request, res: Response, next: Ne
   const client = await pool.connect();
 
   try {
+
+    // Check to see if user already joined
     const alreadyJoined = await client.query(`
       SELECT * FROM communities_user_map WHERE
       userId = $1 and communityId = $2; 
@@ -136,11 +138,14 @@ export async function joinCommunityHandler(req: Request, res: Response, next: Ne
     await client.query("BEGIN");
 
     // TODO: Check community dosen't exist (Error)
+    // Update communities_user_map table
     await client.query(`
       INSERT INTO communities_user_map (userId, communityId)
       VALUES ($1::uuid, $2::uuid);
       `, [userInfo.id, body.communityId]
     );
+
+    // Increase membercount
     await client.query(`
       UPDATE communities SET membercount = membercount + 1 
       WHERE id = $1; 
@@ -170,6 +175,7 @@ export async function leaveCommunityHandler(req: Request, res: Response, next: N
   const body: { communityId: string } = req.body;
   const userInfo: UserCookieType = res.locals.userInfo;
 
+  // Make sure communityId is provided
   if (!body.communityId) {
     return res.status(200).send({
       success: false,
@@ -177,9 +183,12 @@ export async function leaveCommunityHandler(req: Request, res: Response, next: N
     });
   }
 
+  // Secure a connection
   const client = await pool.connect();
 
   try {
+
+    // Make sure user has joined the community
     const joined = await client.query(`
       SELECT * FROM communities_user_map WHERE
       userId = $1 and communityId = $2;
@@ -192,6 +201,9 @@ export async function leaveCommunityHandler(req: Request, res: Response, next: N
         message: "Not joined the community",
       });
     }
+
+    // User cannot leave their own community
+    // TODO: Maybe they can?
     else if (joined.rows[0].userid === userInfo.id) {
       return res.status(200).json({
         success: false,
@@ -199,17 +211,94 @@ export async function leaveCommunityHandler(req: Request, res: Response, next: N
       });
     }
 
+    // BEGIN Transaction
     await client.query("BEGIN");
 
     // TODO: Check community dosen't exist (Error)
+    // DELETE from communities_user_map
     await client.query(`
-      DELETE FROM communities_user_map 
+      DELETE FROM communities_user_map
       WHERE userId = $1::uuid AND communityId = $2::uuid;
       `, [userInfo.id, body.communityId]
     );
+
+    // Decrease memeberCount from community
     await client.query(`
-      UPDATE communities SET membercount = membercount - 1 
-      WHERE id = $1; 
+      UPDATE communities SET membercount = membercount - 1
+      WHERE id = $1;
+      `, [body.communityId]
+    );
+
+    // Commmit
+    await client.query("COMMIT");
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully left the commmunity",
+    });
+  }
+  catch (err) {
+    await client.query("ROLLBACK");
+    next(err);
+  }
+  finally {
+    client.release();
+  }
+}
+
+export async function deleteCommunityHandler(req: Request, res: Response, next: NextFunction) {
+
+  // Get request body and data from cookie
+  const body: { communityId: string } = req.body;
+  const userInfo: UserCookieType = res.locals.userInfo;
+
+  if (!body.communityId) {
+    return res.status(200).send({
+      success: false,
+      message: "CommunityId not present",
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+
+    // Check for community
+    const joined = await client.query(`
+      SELECT * FROM communities WHERE
+      id = $1;
+      `, [body.communityId]
+    );
+
+    if (joined.rowCount !== 1) {
+      return res.status(200).json({
+        success: false,
+        message: "No community found",
+      });
+    }
+
+    // Check to verify for owner
+    else if (joined.rows[0].ownerid !== userInfo.id) {
+      return res.status(200).json({
+        success: false,
+        message: "Only owners can delete a community",
+      });
+    }
+
+    await client.query("BEGIN");
+
+    // TODO: Check community dosen't exist (Error)
+    // Delete mapping(Delete all users from community)
+    await client.query(`
+      DELETE FROM communities_user_map
+      WHERE communityid = $1;
+      `, [body.communityId]
+    );
+
+    // Delete the community
+    await client.query(`
+      DELETE FROM communities
+      WHERE id = $1::uuid;
       `, [body.communityId]
     );
 
@@ -217,7 +306,7 @@ export async function leaveCommunityHandler(req: Request, res: Response, next: N
 
     return res.status(200).json({
       success: true,
-      message: "Successfully left the commmunity",
+      message: "Successfully deleted the commmunity",
     });
   }
   catch (err) {

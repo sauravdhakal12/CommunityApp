@@ -1,6 +1,7 @@
 import express from "express";
 import {
   createCommunityHandler,
+  deleteCommunityHandler,
   joinCommunityHandler,
   leaveCommunityHandler,
   returnCommunityHandler
@@ -13,3 +14,4 @@ communityRouter.post("/", authCheck, createCommunityHandler);
 communityRouter.get("/:id", returnCommunityHandler);
 communityRouter.post("/join", authCheck, joinCommunityHandler);
 communityRouter.post("/leave", authCheck, leaveCommunityHandler);
+communityRouter.post("/delete", authCheck, deleteCommunityHandler);
