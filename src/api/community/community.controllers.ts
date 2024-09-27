@@ -162,3 +162,69 @@ export async function joinCommunityHandler(req: Request, res: Response, next: Ne
     client.release();
   }
 }
+
+
+export async function leaveCommunityHandler(req: Request, res: Response, next: NextFunction) {
+
+  // Get request body and data from cookie
+  const body: { communityId: string } = req.body;
+  const userInfo: UserCookieType = res.locals.userInfo;
+
+  if (!body.communityId) {
+    return res.status(200).send({
+      success: false,
+      message: "CommunityId not present",
+    });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    const joined = await client.query(`
+      SELECT * FROM communities_user_map WHERE
+      userId = $1 and communityId = $2;
+      `, [userInfo.id, body.communityId]
+    );
+
+    if (joined.rowCount !== 1) {
+      return res.status(200).json({
+        success: false,
+        message: "Not joined the community",
+      });
+    }
+    else if (joined.rows[0].userid === userInfo.id) {
+      return res.status(200).json({
+        success: false,
+        message: "Cannot leave your own community",
+      });
+    }
+
+    await client.query("BEGIN");
+
+    // TODO: Check community dosen't exist (Error)
+    await client.query(`
+      DELETE FROM communities_user_map 
+      WHERE userId = $1::uuid AND communityId = $2::uuid;
+      `, [userInfo.id, body.communityId]
+    );
+    await client.query(`
+      UPDATE communities SET membercount = membercount - 1 
+      WHERE id = $1; 
+      `, [body.communityId]
+    );
+
+    await client.query("COMMIT");
+
+    return res.status(200).json({
+      success: true,
+      message: "Successfully left the commmunity",
+    });
+  }
+  catch (err) {
+    await client.query("ROLLBACK");
+    next(err);
+  }
+  finally {
+    client.release();
+  }
+}
