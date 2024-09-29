@@ -4,6 +4,19 @@ import { UserCookieType } from "../user/user.types";
 
 import db, { pool } from "@/utils/db";
 
+export async function returnAllCommunityHandler(req: Request, res: Response, next: NextFunction) {
+  try {
+    const allCommunities = await db("SELECT * FROM communities");
+    return res.status(200).json({
+      success: true,
+      data: allCommunities.rows
+    });
+  }
+  catch (err) {
+    next(err);
+  }
+}
+
 export async function createCommunityHandler(req: Request, res: Response, next: NextFunction) {
 
   // Get request body and data from cookie
