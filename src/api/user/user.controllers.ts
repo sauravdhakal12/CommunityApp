@@ -102,12 +102,11 @@ export const userLoginHandler = async (req: Request, res: Response, next: NextFu
       name: userData.name,
     }, "1234");
 
-    const cookieOption = {
+    res.cookie("auth_token", jwtToken, {
+      secure: true,
+      sameSite: "none",
       maxAge: (1000 * 60 * 60 * 24 * 7),
-      path: "/"
-    };
-
-    res.cookie("auth_token", jwtToken, cookieOption);
+    });
 
     // Success
     return res.status(200).json({
