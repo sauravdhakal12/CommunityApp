@@ -18,3 +18,6 @@ seed/
 
 # Test
 coverage/
+
+# Keys
+security/

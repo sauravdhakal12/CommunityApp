@@ -3,16 +3,26 @@
   FOR TESTS.
 */
 
-import { PORT } from "@/utils/config";
+import { PORT, KEY_FILE, CERT_FILE } from "@/utils/config";
+import https from "https";
+import fs from "fs";
+import path from "path";
 import app from "@/index";
 
 import { pool } from "@/utils/db";
 
 import Logger from "@/utils/logger";
 
-// Start server
-const server = app.listen(PORT, () => {
-  Logger.debug(`Listening on port ${PORT}`);
+// Read SSL certificate and key files
+const options = {
+  key: fs.readFileSync(path.join(__dirname, KEY_FILE)),
+  cert: fs.readFileSync(path.join(__dirname, CERT_FILE)),
+};
+
+// Start a new https server
+const server = https.createServer(options, app);
+server.listen(PORT, () => {
+  Logger.debug(`App listening on https://localhost:${PORT}`);
 });
 
 // Shutdown Script (To close all db connection)
