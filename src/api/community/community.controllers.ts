@@ -4,9 +4,19 @@ import { UserCookieType } from "../user/user.types";
 
 import db, { pool } from "@/utils/db";
 
+/*
+##############################
+##  RETURN ALL COMMUNITIES  ##
+##############################
+*/
 export async function returnAllCommunityHandler(req: Request, res: Response, next: NextFunction) {
+  // TODO: Return a fixed amount, recommeded
   try {
+
+    // Fetch all communities
     const allCommunities = await db("SELECT * FROM communities");
+
+    // Return all communities
     return res.status(200).json({
       success: true,
       data: allCommunities.rows
@@ -17,6 +27,51 @@ export async function returnAllCommunityHandler(req: Request, res: Response, nex
   }
 }
 
+
+/*
+#############################################
+##  CHECK IF A USER IS PART OF A COMMUNITY ##
+#############################################
+*/
+export async function userPartOfCommunityHandler(req: Request, res: Response, next: NextFunction) {
+
+  // Fetch body and userinfo from cookie
+  const body: { communityId: string } = req.body;
+  const userInfo: UserCookieType = res.locals.userInfo;
+
+  if (!body.communityId || !userInfo.id) {
+    return res.status(200).json({
+      success: false,
+      message: "Required fields not filled"
+    });
+  }
+
+  try {
+
+    // Check if user is part of a community
+    const joined = await db(`
+      SELECT * FROM communities_user_map
+      WHERE userid = $1::uuid AND communityid = $2::uuid;
+      `, [userInfo.id, body.communityId]
+    );
+
+    // If data fetched, return true else false
+    return res.status(200).json({
+      success: joined.rowCount === 1
+    });
+
+  }
+  catch (err) {
+    next(err);
+  }
+}
+
+
+/*
+#############################
+##  CREATE A NEW COMMUNITY ##
+#############################
+*/
 export async function createCommunityHandler(req: Request, res: Response, next: NextFunction) {
 
   // Get request body and data from cookie
@@ -75,6 +130,12 @@ export async function createCommunityHandler(req: Request, res: Response, next: 
   }
 }
 
+
+/*
+###############################
+##   GET INFO ON A COMMUNITY ##
+###############################
+*/
 export async function returnCommunityHandler(req: Request, res: Response, next: NextFunction) {
 
   // Get request body and data from cookie
@@ -117,6 +178,13 @@ export async function returnCommunityHandler(req: Request, res: Response, next: 
   }
 };
 
+
+
+/*
+########################
+##   JOIN A COMMUNITY ##
+########################
+*/
 export async function joinCommunityHandler(req: Request, res: Response, next: NextFunction) {
 
   // Get request body and data from cookie
@@ -182,6 +250,11 @@ export async function joinCommunityHandler(req: Request, res: Response, next: Ne
 }
 
 
+/*
+########################
+##  LEAVE A COMMUNITY ##
+########################
+*/
 export async function leaveCommunityHandler(req: Request, res: Response, next: NextFunction) {
 
   // Get request body and data from cookie
@@ -259,6 +332,12 @@ export async function leaveCommunityHandler(req: Request, res: Response, next: N
   }
 }
 
+
+/*
+#########################
+##  DELETE A COMMUNITY ##
+#########################
+*/
 export async function deleteCommunityHandler(req: Request, res: Response, next: NextFunction) {
 
   // Get request body and data from cookie
