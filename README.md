@@ -45,4 +45,4 @@ To get a local copy up and running, follow these steps:
     ```
     
 # Contributing
-As I am also on my learning journey, Feedback or collaboration! are most welcome. Feel free to open an issue or submit a pull request.
+As I am also on my learning journey, Feedback or collaboration are most welcome. Feel free to open an issue or submit a pull request.
