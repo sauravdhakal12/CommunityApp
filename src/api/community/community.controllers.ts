@@ -274,6 +274,11 @@ export async function leaveCommunityHandler(req: Request, res: Response, next: N
 
   try {
 
+    const community = await client.query(`
+      SELECT ownerid FROM communities WHERE
+      id = $1;
+    `, [body.communityId]);
+
     // Make sure user has joined the community
     const joined = await client.query(`
       SELECT * FROM communities_user_map WHERE
@@ -281,7 +286,13 @@ export async function leaveCommunityHandler(req: Request, res: Response, next: N
       `, [userInfo.id, body.communityId]
     );
 
-    if (joined.rowCount !== 1) {
+    if (community.rowCount === 0) {
+      return res.status(200).json({
+        success: false,
+        message: "No community found",
+      });
+    }
+    else if (joined.rowCount !== 1) {
       return res.status(200).json({
         success: false,
         message: "Not joined the community",
@@ -290,7 +301,7 @@ export async function leaveCommunityHandler(req: Request, res: Response, next: N
 
     // User cannot leave their own community
     // TODO: Maybe they can?
-    else if (joined.rows[0].userid === userInfo.id) {
+    else if (joined.rows[0].userid === community.rows[0].ownerid) {
       return res.status(200).json({
         success: false,
         message: "Cannot leave your own community",
